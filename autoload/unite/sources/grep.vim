@@ -29,7 +29,16 @@ call unite#util#set_default('g:unite_source_grep_default_dir', '')
 call unite#util#set_default('g:unite_source_grep_default_opts', '')
 "}}}
 
-let s:grep_source = { 'name': 'grep', 'is_volatile': 1 }
+function! unite#sources#grep#define() "{{{
+  return s:grep_source
+endfunction "}}}
+
+let s:grep_source = {
+  \   'name': 'grep',
+  \   'is_volatile': 1,
+  \   'required_pattern_length': 3,
+  \ }
+
 function! s:grep_source.gather_candidates(args, context) "{{{
   let l:directory  = get(a:args, 0, g:unite_source_grep_default_dir)
   let l:extra_opts = get(a:args, 1, g:unite_source_grep_default_opts)
@@ -54,6 +63,5 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   "action__path": substitute(v:val, "\:.*", "", ""),
     \ }')
 endfunction "}}}
-call unite#define_source(s:grep_source)
 
 " vim: foldmethod=marker
