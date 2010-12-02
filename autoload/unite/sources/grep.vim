@@ -25,8 +25,8 @@
 "=============================================================================
 "
 " Variables  "{{{
-call unite#util#set_default('g:unite_source_grep_default_dir', '')
 call unite#util#set_default('g:unite_source_grep_default_opts', '')
+call unite#util#set_default('g:unite_source_grep_target_dir', '')
 "}}}
 
 function! unite#sources#grep#define() "{{{
@@ -40,12 +40,17 @@ let s:grep_source = {
   \ }
 
 function! s:grep_source.gather_candidates(args, context) "{{{
-  let l:directory  = get(a:args, 0, g:unite_source_grep_default_dir)
+
+  if len(a:args) == 0 && empty(g:unite_source_grep_target_dir)
+    let g:unite_source_grep_target_dir = input('Target directory: ')
+  endif
+
+  let l:directory  = get(a:args, 0, g:unite_source_grep_target_dir)
   let l:extra_opts = get(a:args, 1, g:unite_source_grep_default_opts)
 
   if l:directory =~ '^-'
     let l:extra_opts = l:directory
-    let l:directory  = g:unite_source_grep_default_dir
+    let l:directory  = g:unite_source_grep_target_dir
   endif
 
   let l:candidates = split(
