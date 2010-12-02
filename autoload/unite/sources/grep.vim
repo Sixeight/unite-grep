@@ -59,7 +59,7 @@ let s:grep_source = {
 function! s:grep_source.gather_candidates(args, context) "{{{
 
   let l:directory  = get(a:args, 0, s:unite_source_grep_target_dir)
-  let l:extra_opts = get(a:args, 1, g:unite_source_grep_default_opts)
+  let l:extra_opts = get(a:args, 1, '')
 
   if get(a:args, 0, '') =~ '^-'
     let l:extra_opts = l:directory
@@ -75,7 +75,8 @@ function! s:grep_source.gather_candidates(args, context) "{{{
 
   let l:candidates = split(
     \ unite#util#system(printf(
-    \   'grep -n %s %s %s',
+    \   'grep -n %s %s %s %s',
+    \   g:unite_source_grep_default_opts,
     \   a:context.input,
     \   l:directory,
     \   l:extra_opts)),
