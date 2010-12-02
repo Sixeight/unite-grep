@@ -40,6 +40,7 @@
 "
 " Variables  "{{{
 call unite#util#set_default('g:unite_source_grep_default_opts', '')
+call unite#util#set_default('g:unite_source_grep_max_candidates', 100)
 let s:unite_source_grep_target_dir = ''
 "}}}
 
@@ -51,6 +52,7 @@ let s:grep_source = {
   \   'name': 'grep',
   \   'is_volatile': 1,
   \   'required_pattern_length': 3,
+  \   'max_candidates': g:unite_source_grep_max_candidates,
   \ }
 
 function! s:grep_source.gather_candidates(args, context) "{{{
