@@ -74,7 +74,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
 
   let l:candidates = split(
     \ unite#util#system(printf(
-    \   'grep %s %s %s',
+    \   'grep -n %s %s %s',
     \   a:context.input,
     \   l:directory,
     \   l:extra_opts)),
@@ -83,8 +83,9 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \ '{
     \   "word": v:val,
     \   "source": "grep",
-    \   "kind": "file",
-    \   "action__path": substitute(v:val, "\:.*", "", ""),
+    \   "kind": "jump_list",
+    \   "action__path": get(split(v:val, ":", ""), 0),
+    \   "action__line": get(split(v:val, ":", ""), 1),
     \ }')
 endfunction "}}}
 
