@@ -35,6 +35,7 @@
 "
 " TODO:
 "   * change target directory
+"   * show current target
 "   * support ignore pattern
 "   * the goal is general unix command source :)
 "
