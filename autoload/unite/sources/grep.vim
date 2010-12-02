@@ -44,6 +44,22 @@ call unite#util#set_default('g:unite_source_grep_max_candidates', 100)
 let s:unite_source_grep_target_dir = ''
 "}}}
 
+" Actions "{{{
+
+let s:change_directory = {
+  \   'description': 'change target directory',
+  \   'is_quit': 0,
+  \   'is_invalidate_cache': 1,
+  \ }
+
+function! s:change_directory.func(candidates)
+  let s:unite_source_grep_target_dir = expand(get(split(a:candidates.word, ":"), 0, '') . ":p:h")
+endfunction
+
+call unite#custom_action('source/grep/jump_list', 'target', s:change_directory)
+
+" }}}
+
 function! unite#sources#grep#define() "{{{
   return executable('grep') ? s:grep_source : []
 endfunction "}}}
