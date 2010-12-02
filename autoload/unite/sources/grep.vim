@@ -44,7 +44,7 @@ let s:unite_source_grep_target_dir = ''
 "}}}
 
 function! unite#sources#grep#define() "{{{
-  return s:grep_source
+  return executable('grep') ? s:grep_source : []
 endfunction "}}}
 
 let s:grep_source = {
