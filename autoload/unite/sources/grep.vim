@@ -34,7 +34,6 @@
 "   let g:unite_source_grep_default_opts = '-iR'
 "
 " TODO:
-"   * jump into matched line
 "   * change target directory
 "   * support ignore pattern
 "   * the goal is general unix command source :)
