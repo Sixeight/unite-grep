@@ -62,7 +62,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
   let l:directory  = get(a:args, 0, g:unite_source_grep_target_dir)
   let l:extra_opts = get(a:args, 1, g:unite_source_grep_default_opts)
 
-  if l:directory =~ '^-'
+  if get(a:args, 0, '') =~ '^-'
     let l:extra_opts = l:directory
     let l:directory  = g:unite_source_grep_target_dir
   endif
