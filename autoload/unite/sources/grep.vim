@@ -24,6 +24,20 @@
 " }}}
 "=============================================================================
 "
+" Usage:
+"   :Unite grep:directory:-options -input=pattern
+"   (:Unite grep:~/.vim/autoload/unite/sources:-iR -input=file)
+"
+"   recommended to use -prompt=:)\  for your happy hacking
+"
+" Setting Examples:
+"   let g:unite_source_grep_default_opts = '-iR'
+"
+" TODO:
+"   * jump into matched line
+"   * change target directory
+"   * the goal is general unix command source :)
+"
 " Variables  "{{{
 call unite#util#set_default('g:unite_source_grep_default_opts', '')
 call unite#util#set_default('g:unite_source_grep_target_dir', '')
