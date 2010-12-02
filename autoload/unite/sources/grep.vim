@@ -40,7 +40,7 @@
 "
 " Variables  "{{{
 call unite#util#set_default('g:unite_source_grep_default_opts', '')
-call unite#util#set_default('g:unite_source_grep_target_dir', '')
+let s:unite_source_grep_target_dir = ''
 "}}}
 
 function! unite#sources#grep#define() "{{{
@@ -55,17 +55,20 @@ let s:grep_source = {
 
 function! s:grep_source.gather_candidates(args, context) "{{{
 
-  if len(a:args) == 0 && empty(g:unite_source_grep_target_dir)
-    let g:unite_source_grep_target_dir = input('Target directory: ')
-  endif
-
-  let l:directory  = get(a:args, 0, g:unite_source_grep_target_dir)
+  let l:directory  = get(a:args, 0, s:unite_source_grep_target_dir)
   let l:extra_opts = get(a:args, 1, g:unite_source_grep_default_opts)
 
   if get(a:args, 0, '') =~ '^-'
     let l:extra_opts = l:directory
-    let l:directory  = g:unite_source_grep_target_dir
+    let l:directory  = s:unite_source_grep_target_dir
   endif
+
+  if empty(l:directory) && empty(s:unite_source_grep_target_dir)
+    let s:unite_source_grep_target_dir = input('Target directory: ')
+    let l:directory = s:unite_source_grep_target_dir
+  endif
+
+  let s:unite_source_grep_target_dir = s:unite_source_grep_target_dir
 
   let l:candidates = split(
     \ unite#util#system(printf(
