@@ -54,7 +54,7 @@ let s:change_target = {
   \ }
 
 function! s:change_target.func(candidates)
-  let s:unite_source_grep_target = expand(get(split(a:candidates.word, ":"), 0, '') . ":p")
+  let s:unite_source_grep_target = fnamemodify(get(split(a:candidates.word, ":"), 0, ''), ":p")
 endfunction
 
 call unite#custom_action('source/grep/jump_list', 'target', s:change_target)
