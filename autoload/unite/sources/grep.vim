@@ -91,7 +91,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
 
   let l:candidates = split(
     \ unite#util#system(printf(
-    \   'grep -n %s %s %s %s',
+    \   'grep -Hn %s %s %s %s',
     \   g:unite_source_grep_default_opts,
     \   a:context.input,
     \   l:target,
