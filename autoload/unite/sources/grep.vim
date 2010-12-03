@@ -25,7 +25,7 @@
 "=============================================================================
 "
 " Usage:
-"   :Unite grep:directory:-options -input=pattern
+"   :Unite grep:target:-options -input=pattern
 "   (:Unite grep:~/.vim/autoload/unite/sources:-iR -input=file)
 "
 "   recommended to use -prompt=:)\  for your happy hacking
@@ -34,7 +34,7 @@
 "   let g:unite_source_grep_default_opts = '-iR'
 "
 " TODO:
-"   * change target directory
+"   * change target targe
 "   * show current target
 "   * support ignore pattern
 "   * the goal is general unix command source :)
@@ -42,22 +42,22 @@
 " Variables  "{{{
 call unite#util#set_default('g:unite_source_grep_default_opts', '')
 call unite#util#set_default('g:unite_source_grep_max_candidates', 100)
-let s:unite_source_grep_target_dir = ''
+let s:unite_source_grep_target = ''
 "}}}
 
 " Actions "{{{
 
-let s:change_directory = {
-  \   'description': 'change target directory',
+let s:change_target = {
+  \   'description': 'specified target file',
   \   'is_quit': 0,
   \   'is_invalidate_cache': 1,
   \ }
 
-function! s:change_directory.func(candidates)
-  let s:unite_source_grep_target_dir = expand(get(split(a:candidates.word, ":"), 0, '') . ":p:h")
+function! s:change_target.func(candidates)
+  let s:unite_source_grep_target = expand(get(split(a:candidates.word, ":"), 0, '') . ":p")
 endfunction
 
-call unite#custom_action('source/grep/jump_list', 'target', s:change_directory)
+call unite#custom_action('source/grep/jump_list', 'target', s:change_target)
 
 " }}}
 
@@ -74,27 +74,27 @@ let s:grep_source = {
 
 function! s:grep_source.gather_candidates(args, context) "{{{
 
-  let l:directory  = get(a:args, 0, s:unite_source_grep_target_dir)
+  let l:target  = get(a:args, 0, s:unite_source_grep_target)
   let l:extra_opts = get(a:args, 1, '')
 
   if get(a:args, 0, '') =~ '^-'
-    let l:extra_opts = l:directory
-    let l:directory  = s:unite_source_grep_target_dir
+    let l:extra_opts = l:target
+    let l:target  = s:unite_source_grep_target
   endif
 
-  if empty(l:directory) && empty(s:unite_source_grep_target_dir)
-    let s:unite_source_grep_target_dir = input('Target directory: ')
-    let l:directory = s:unite_source_grep_target_dir
+  if empty(l:target) && empty(s:unite_source_grep_target)
+    let s:unite_source_grep_target = input('Target: ')
+    let l:target = s:unite_source_grep_target
   endif
 
-  let s:unite_source_grep_target_dir = s:unite_source_grep_target_dir
+  let s:unite_source_grep_target = l:target
 
   let l:candidates = split(
     \ unite#util#system(printf(
     \   'grep -n %s %s %s %s',
     \   g:unite_source_grep_default_opts,
     \   a:context.input,
-    \   l:directory,
+    \   l:target,
     \   l:extra_opts)),
     \  "\n")
   return map(l:candidates,
