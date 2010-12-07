@@ -52,7 +52,7 @@ let s:action_grep = {
   \   'is_selectable': 1,
   \ }
 function! s:action_grep.func(candidates) "{{{
-  call unite#start([insert(map(copy(a:candidates), 'v:val.action__path'), 'grep')], unite#get_context())
+  call unite#start([insert(map(copy(a:candidates), 'v:val.action__path'), 'grep')])
 endfunction "}}}
 if executable('grep')
   call unite#custom_action('source/file/file', 'grep', s:action_grep)
