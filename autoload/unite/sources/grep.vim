@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 02 Dec 2010
+" Last Modified: 08 Dec 2010
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -34,7 +34,6 @@
 "   let g:unite_source_grep_default_opts = '-iR'
 "
 " TODO:
-"   * change target targe
 "   * show current target
 "   * support ignore pattern
 "   * the goal is general unix command source :)
@@ -46,19 +45,18 @@ let s:unite_source_grep_target = ''
 "}}}
 
 " Actions "{{{
-
-let s:change_target = {
-  \   'description': 'specified target file',
-  \   'is_quit': 0,
+let s:action_grep = {
+  \   'description': 'grep this',
+  \   'is_quit': 1,
   \   'is_invalidate_cache': 1,
+  \   'is_selectable': 1,
   \ }
-
-function! s:change_target.func(candidates)
-  let s:unite_source_grep_target = fnamemodify(get(split(a:candidates.word, ":"), 0, ''), ":p")
-endfunction
-
-call unite#custom_action('source/grep/jump_list', 'target', s:change_target)
-
+function! s:action_grep.func(candidates) "{{{
+  call unite#start([insert(map(copy(a:candidates), 'v:val.action__path'), 'grep')], unite#get_context())
+endfunction "}}}
+if executable('grep')
+  call unite#custom_action('source/file/file', 'grep', s:action_grep)
+endif
 " }}}
 
 function! unite#sources#grep#define() "{{{
@@ -69,6 +67,7 @@ let s:grep_source = {
   \   'name': 'grep',
   \   'is_volatile': 1,
   \   'required_pattern_length': 3,
+  \   'action_table': {},
   \   'max_candidates': g:unite_source_grep_max_candidates,
   \ }
 
