@@ -67,7 +67,6 @@ let s:grep_source = {
   \   'name': 'grep',
   \   'is_volatile': 1,
   \   'required_pattern_length': 3,
-  \   'action_table': {},
   \   'max_candidates': g:unite_source_grep_max_candidates,
   \ }
 
