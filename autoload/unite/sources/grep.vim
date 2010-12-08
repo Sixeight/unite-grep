@@ -24,11 +24,13 @@
 " }}}
 "=============================================================================
 "
+" Description:
+"   You can grep with unite interactive.
+"   And use grep action on file/buffer kind.
+"
 " Usage:
 "   :Unite grep:target:-options -input=pattern
 "   (:Unite grep:~/.vim/autoload/unite/sources:-iR -input=file)
-"
-"   recommended to use -prompt=:)\  for your happy hacking
 "
 " Setting Examples:
 "   let g:unite_source_grep_default_opts = '-iR'
@@ -55,7 +57,7 @@ function! s:action_grep.func(candidates) "{{{
   call unite#start([insert(map(copy(a:candidates), 'v:val.action__path'), 'grep')])
 endfunction "}}}
 if executable('grep')
-  call unite#custom_action('source/file/file', 'grep', s:action_grep)
+  call unite#custom_action('file,buffer', 'grep', s:action_grep)
 endif
 " }}}
 
