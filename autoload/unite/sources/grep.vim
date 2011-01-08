@@ -71,24 +71,30 @@ let s:grep_source = {
   \   'is_volatile': 1,
   \   'required_pattern_length': 3,
   \   'max_candidates': g:unite_source_grep_max_candidates,
+  \   'hooks' : {},
   \ }
 
-function! s:grep_source.gather_candidates(args, context) "{{{
-
+function! s:grep_source.hooks.on_init(args, context) "{{{
   let l:target  = get(a:args, 0, s:unite_source_grep_target)
-  let l:extra_opts = get(a:args, 1, '')
 
   if get(a:args, 0, '') =~ '^-'
-    let l:extra_opts = l:target
     let l:target  = s:unite_source_grep_target
   endif
 
-  if empty(l:target) && empty(s:unite_source_grep_target)
-    let s:unite_source_grep_target = input('Target: ')
-    let l:target = s:unite_source_grep_target
+  if empty(l:target)
+    let l:target = input('Target: ', '', 'file')
+  endif
+
+  if l:target == '%' || l:target == '#'
+    let l:target = bufname(l:target)
   endif
 
   let s:unite_source_grep_target = l:target
+endfunction"}}}
+
+function! s:grep_source.gather_candidates(args, context) "{{{
+  let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
+        \ a:args[0]: get(a:args, 1, '')
 
   let l:candidates = split(
     \ unite#util#system(printf(
@@ -96,7 +102,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   g:unite_source_grep_command,
     \   g:unite_source_grep_default_opts,
     \   a:context.input,
-    \   l:target,
+    \   s:unite_source_grep_target,
     \   l:extra_opts)),
     \  "\n")
   return map(l:candidates,
