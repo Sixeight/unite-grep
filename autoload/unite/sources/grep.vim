@@ -81,8 +81,13 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
     let l:target  = s:unite_source_grep_target
   endif
 
-  if empty(l:target)
+  if l:target == ''
     let l:target = input('Target: ', '', 'file')
+
+    if l:target == ''
+      " Current buffer.
+      let l:target = '%'
+    endif
   endif
 
   if l:target == '%' || l:target == '#'
