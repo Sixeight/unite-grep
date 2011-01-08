@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 08 Dec 2010
+" Last Modified: 08 Jan 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -33,7 +33,7 @@
 "   (:Unite grep:~/.vim/autoload/unite/sources:-iR -input=file)
 "
 " Setting Examples:
-"   let g:unite_source_grep_default_opts = '-iR'
+"   let g:unite_source_grep_default_opts = '-iRHn'
 "
 " TODO:
 "   * show current target
@@ -41,7 +41,8 @@
 "   * the goal is general unix command source :)
 "
 " Variables  "{{{
-call unite#util#set_default('g:unite_source_grep_default_opts', '')
+call unite#util#set_default('g:unite_source_grep_command', 'grep')
+call unite#util#set_default('g:unite_source_grep_default_opts', '-Hn')
 call unite#util#set_default('g:unite_source_grep_max_candidates', 100)
 let s:unite_source_grep_target = ''
 "}}}
@@ -56,7 +57,7 @@ let s:action_grep = {
 function! s:action_grep.func(candidates) "{{{
   call unite#start([insert(map(copy(a:candidates), 'v:val.action__path'), 'grep')])
 endfunction "}}}
-if executable('grep')
+if executable(g:unite_source_grep_command)
   call unite#custom_action('file,buffer', 'grep', s:action_grep)
 endif
 " }}}
@@ -91,7 +92,8 @@ function! s:grep_source.gather_candidates(args, context) "{{{
 
   let l:candidates = split(
     \ unite#util#system(printf(
-    \   'grep -Hn %s %s %s %s',
+    \   '%s %s %s %s %s',
+    \   g:unite_source_grep_command,
     \   g:unite_source_grep_default_opts,
     \   a:context.input,
     \   l:target,
