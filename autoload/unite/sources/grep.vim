@@ -83,11 +83,6 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
 
   if l:target == ''
     let l:target = input('Target: ', '', 'file')
-
-    if l:target == ''
-      " Current buffer.
-      let l:target = '%'
-    endif
   endif
 
   if l:target == '%' || l:target == '#'
@@ -98,6 +93,10 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
 endfunction"}}}
 
 function! s:grep_source.gather_candidates(args, context) "{{{
+  if s:unite_source_grep_target == ''
+    return []
+  endif
+
   let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
         \ a:args[0]: get(a:args, 1, '')
 
