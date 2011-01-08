@@ -110,8 +110,8 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   "word": v:val,
     \   "source": "grep",
     \   "kind": "jump_list",
-    \   "action__path": get(split(v:val, ":", ""), 0),
-    \   "action__line": get(split(v:val, ":", ""), 1),
+    \   "action__path": get(split(v:val, "..\\zs:"), 0),
+    \   "action__line": get(split(v:val, "..\\zs:"), 1),
     \ }')
 endfunction "}}}
 
