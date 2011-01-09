@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 08 Jan 2011.
+" Last Modified: 09 Jan 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -75,7 +75,7 @@ let s:grep_source = {
   \ }
 
 function! s:grep_source.hooks.on_init(args, context) "{{{
-  let l:target  = get(a:args, 0, s:unite_source_grep_target)
+  let l:target  = get(a:args, 0)
 
   if get(a:args, 0, '') =~ '^-'
     let l:target  = s:unite_source_grep_target
@@ -100,7 +100,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
   let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
         \ a:args[0]: get(a:args, 1, '')
 
-  let l:candidates = split(
+  let l:candidates = map(split(
     \ unite#util#system(printf(
     \   '%s %s %s %s %s',
     \   g:unite_source_grep_command,
@@ -108,14 +108,15 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   a:context.input,
     \   s:unite_source_grep_target,
     \   l:extra_opts)),
-    \  "\n")
+    \  "\n"), '[v:val, split(v:val[2:], ":")]')
   return map(l:candidates,
     \ '{
-    \   "word": v:val,
+    \   "word": v:val[0],
     \   "source": "grep",
     \   "kind": "jump_list",
-    \   "action__path": get(split(v:val, "..\\zs:"), 0),
-    \   "action__line": get(split(v:val, "..\\zs:"), 1),
+    \   "action__path": v:val[0][:1].get(v:val[1], 0),
+    \   "action__line": get(v:val[1], 1),
+    \   "source__text": join(v:val[1][2:], ":"),
     \ }')
 endfunction "}}}
 
