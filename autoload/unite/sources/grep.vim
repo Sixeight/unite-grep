@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 09 Jan 2011.
+" Last Modified: 14 Jan 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -109,14 +109,27 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   s:unite_source_grep_target,
     \   l:extra_opts)),
     \  "\n"), '[v:val, split(v:val[2:], ":")]')
+  if empty(l:candidates)
+    return []
+  endif
+
+  " Option check.
+  if len(l:candidates[0][1]) < 2 || l:candidates[0][1][1] !~ '^\d\+$'
+    call unite#print_error('unite: grep: Invalid grep output.')
+    call unite#print_error('unite: grep: Output line must be file:number:pattern.')
+    call unite#print_error(printf('unite: grep: Please check g:unite_source_grep_default_opts value("%s").',
+          \ g:unite_source_grep_default_opts))
+    return []
+  endif
+
   return map(l:candidates,
     \ '{
     \   "word": v:val[0],
     \   "source": "grep",
     \   "kind": "jump_list",
     \   "action__path": v:val[0][:1].get(v:val[1], 0),
-    \   "action__line": get(v:val[1], 1),
-    \   "source__text": join(v:val[1][2:], ":"),
+    \   "action__line": v:val[1][1],
+    \   "action__pattern": join(v:val[1][2:], ":"),
     \ }')
 endfunction "}}}
 
