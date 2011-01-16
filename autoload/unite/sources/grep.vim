@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 14 Jan 2011.
+" Last Modified: 16 Jan 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -129,7 +129,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   "kind": "jump_list",
     \   "action__path": v:val[0][:1].get(v:val[1], 0),
     \   "action__line": v:val[1][1],
-    \   "action__pattern": join(v:val[1][2:], ":"),
+    \   "action__pattern": "^".unite#util#escape_pattern(join(v:val[1][2:], ":"))."$",
     \ }')
 endfunction "}}}
 
