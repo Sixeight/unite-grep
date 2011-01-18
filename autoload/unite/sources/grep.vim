@@ -73,8 +73,6 @@ endfunction "}}}
 
 let s:grep_source = {
   \   'name': 'grep',
-  \   'is_volatile': 1,
-  \   'required_pattern_length': 3,
   \   'max_candidates': g:unite_source_grep_max_candidates,
   \   'hooks' : {},
   \ }
@@ -105,30 +103,20 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     return []
   endif
 
+  let l:input = input('Pattern: ')
+
   let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
         \ a:args[0]: get(a:args, 1, '')
 
-  let l:candidates = map(split(
+  let l:candidates = map(filter(split(
     \ unite#util#system(printf(
     \   '%s %s %s %s %s',
     \   g:unite_source_grep_command,
     \   g:unite_source_grep_default_opts,
-    \   a:context.input,
+    \   l:input,
     \   s:unite_source_grep_target,
     \   l:extra_opts)),
-    \  "\n"), '[v:val, split(v:val[2:], ":")]')
-  if empty(l:candidates)
-    return []
-  endif
-
-  " Option check.
-  if len(l:candidates[0][1]) < 2 || l:candidates[0][1][1] !~ '^\d\+$'
-    call unite#print_error('unite: grep: Invalid grep output.')
-    call unite#print_error('unite: grep: Output line must be file:number:pattern.')
-    call unite#print_error(printf('unite: grep: Please check g:unite_source_grep_default_opts value("%s").',
-          \ g:unite_source_grep_default_opts))
-    return []
-  endif
+    \  "\n"), 'v:val =~ "^.\\+:.\\+:.\\+$"'), '[v:val, split(v:val[2:], ":")]')
 
   return map(l:candidates,
     \ '{
