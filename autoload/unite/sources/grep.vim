@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 16 Jan 2011.
+" Last Modified: 18 Jan 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -31,6 +31,11 @@
 " Usage:
 "   :Unite grep:target:-options -input=pattern
 "   (:Unite grep:~/.vim/autoload/unite/sources:-iR -input=file)
+"
+" Special Target:
+"   %         : Current buffer name
+"   #         : Alternate buffer name
+"   $buffers  : All buffer names
 "
 " Setting Examples:
 "   let g:unite_source_grep_default_opts = '-iRHn'
@@ -86,7 +91,10 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
   endif
 
   if l:target == '%' || l:target == '#'
-    let l:target = bufname(l:target)
+    let l:target = unite#util#escape_file_searching(bufname(l:target))
+  elseif l:target ==# '$buffers'
+    let l:target = join(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'),
+          \ 'unite#util#escape_file_searching(bufname(v:val))'))
   endif
 
   let s:unite_source_grep_target = l:target
