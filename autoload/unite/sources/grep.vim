@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 18 Jan 2011.
+" Last Modified: 19 Jan 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -49,7 +49,6 @@
 call unite#util#set_default('g:unite_source_grep_command', 'grep')
 call unite#util#set_default('g:unite_source_grep_default_opts', '-Hn')
 call unite#util#set_default('g:unite_source_grep_max_candidates', 100)
-let s:unite_source_grep_target = ''
 "}}}
 
 " Actions "{{{
@@ -68,6 +67,12 @@ endif
 " }}}
 
 function! unite#sources#grep#define() "{{{
+  if !exists('*unite#version') || unite#version() <= 100
+    echoerr 'Your unite.vim is too old.'
+    echoerr 'Please install unite.vim Ver.1.1 or above.'
+    return []
+  endif
+
   return executable('grep') ? s:grep_source : []
 endfunction "}}}
 
@@ -78,10 +83,10 @@ let s:grep_source = {
   \ }
 
 function! s:grep_source.hooks.on_init(args, context) "{{{
-  let l:target  = get(a:args, 0)
+  let l:target  = get(a:args, 0, '')
 
   if get(a:args, 0, '') =~ '^-'
-    let l:target  = s:unite_source_grep_target
+    let l:target  = get(a:args, 1, '')
   endif
 
   if l:target == ''
@@ -95,18 +100,18 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
           \ 'unite#util#escape_file_searching(bufname(v:val))'))
   endif
 
-  let s:unite_source_grep_target = l:target
+  let a:context.source__target = l:target
 endfunction"}}}
 
 function! s:grep_source.gather_candidates(args, context) "{{{
-  if s:unite_source_grep_target == ''
+  if a:context.source__target == ''
     return []
   endif
 
   let l:input = input('Pattern: ')
 
   let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
-        \ a:args[0]: get(a:args, 1, '')
+        \ a:args[0] : get(a:args, 1, '')
 
   let l:candidates = map(filter(split(
     \ unite#util#system(printf(
@@ -114,7 +119,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   g:unite_source_grep_command,
     \   g:unite_source_grep_default_opts,
     \   l:input,
-    \   s:unite_source_grep_target,
+    \   a:context.source__target,
     \   l:extra_opts)),
     \  "\n"), 'v:val =~ "^.\\+:.\\+:.\\+$"'), '[v:val, split(v:val[2:], ":")]')
 
@@ -123,7 +128,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   "word": v:val[0],
     \   "source": "grep",
     \   "kind": "jump_list",
-    \   "action__path": v:val[0][:1].get(v:val[1], 0),
+    \   "action__path": v:val[0][:1].v:val[1][0],
     \   "action__line": v:val[1][1],
     \   "action__pattern": "^".unite#util#escape_pattern(join(v:val[1][2:], ":"))."$",
     \ }')
