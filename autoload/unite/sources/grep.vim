@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 19 Jan 2011.
+" Last Modified: 24 Feb 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -52,17 +52,28 @@ call unite#util#set_default('g:unite_source_grep_max_candidates', 100)
 "}}}
 
 " Actions "{{{
-let s:action_grep = {
-  \   'description': 'grep this',
+let s:action_grep_file = {
+  \   'description': 'grep this files',
   \   'is_quit': 1,
   \   'is_invalidate_cache': 1,
   \   'is_selectable': 1,
   \ }
-function! s:action_grep.func(candidates) "{{{
+function! s:action_grep_file.func(candidates) "{{{
   call unite#start([insert(map(copy(a:candidates), 'v:val.action__path'), 'grep')])
 endfunction "}}}
+
+let s:action_grep_directory = {
+  \   'description': 'grep this directory',
+  \   'is_quit': 1,
+  \   'is_invalidate_cache': 1,
+  \   'is_selectable': 1,
+  \ }
+function! s:action_grep_directory.func(candidates) "{{{
+  call unite#start([insert(map(copy(a:candidates), 'v:val.action__directory'), 'grep')])
+endfunction "}}}
 if executable(g:unite_source_grep_command)
-  call unite#custom_action('file,buffer', 'grep', s:action_grep)
+  call unite#custom_action('file,buffer', 'grep', s:action_grep_file)
+  call unite#custom_action('file,buffer', 'grep_directory', s:action_grep_directory)
 endif
 " }}}
 
@@ -84,31 +95,37 @@ let s:grep_source = {
 
 function! s:grep_source.hooks.on_init(args, context) "{{{
   let l:target  = get(a:args, 0, '')
+  if type(l:target) != type([])
+    if l:target =~ '^-'
+      let l:target  = get(a:args, 1, '')
+    endif
 
-  if get(a:args, 0, '') =~ '^-'
-    let l:target  = get(a:args, 1, '')
+    if l:target == ''
+      let l:target = input('Target: ', '', 'file')
+    endif
+
+    if l:target == '%' || l:target == '#'
+      let l:target = unite#util#escape_file_searching(bufname(l:target))
+    elseif l:target ==# '$buffers'
+      let l:target = join(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'),
+            \ 'unite#util#escape_file_searching(bufname(v:val))'))
+    endif
+
+    let a:context.source__target = [l:target]
+  else
+    let a:context.source__target = l:target
   endif
 
-  if l:target == ''
-    let l:target = input('Target: ', '', 'file')
-  endif
+  let a:context.source__input = input('Pattern: ')
 
-  if l:target == '%' || l:target == '#'
-    let l:target = unite#util#escape_file_searching(bufname(l:target))
-  elseif l:target ==# '$buffers'
-    let l:target = join(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'),
-          \ 'unite#util#escape_file_searching(bufname(v:val))'))
-  endif
-
-  let a:context.source__target = l:target
+  call unite#print_message('[grep] Target: ' . join(a:context.source__target))
+  call unite#print_message('[grep] Pattern: ' . a:context.source__input)
 endfunction"}}}
 
 function! s:grep_source.gather_candidates(args, context) "{{{
-  if a:context.source__target == ''
+  if empty(a:context.source__target)
     return []
   endif
-
-  let l:input = input('Pattern: ')
 
   let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
         \ a:args[0] : get(a:args, 1, '')
@@ -118,8 +135,8 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   '%s %s %s %s %s',
     \   g:unite_source_grep_command,
     \   g:unite_source_grep_default_opts,
-    \   l:input,
-    \   a:context.source__target,
+    \   a:context.source__input,
+    \   join(a:context.source__target),
     \   l:extra_opts)),
     \  "\n"), 'v:val =~ "^.\\+:.\\+:.\\+$"'), '[v:val, split(v:val[2:], ":")]')
 
