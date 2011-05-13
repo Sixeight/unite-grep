@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 24 Feb 2011.
+" Last Modified: 13 May 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -84,7 +84,7 @@ function! unite#sources#grep#define() "{{{
     return []
   endif
 
-  return executable('grep') ? s:grep_source : []
+  return executable('grep') && unite#util#has_vimproc() ? s:grep_source : []
 endfunction "}}}
 
 let s:grep_source = {
@@ -130,15 +130,52 @@ function! s:grep_source.gather_candidates(args, context) "{{{
   let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
         \ a:args[0] : get(a:args, 1, '')
 
-  let l:candidates = map(filter(split(
-    \ unite#util#system(printf(
-    \   '%s %s %s %s %s',
+  let l:cmdline = printf('%s %s %s %s %s',
     \   g:unite_source_grep_command,
     \   g:unite_source_grep_default_opts,
     \   a:context.source__input,
     \   join(a:context.source__target),
-    \   l:extra_opts)),
-    \  "\n"), 'v:val =~ "^.\\+:.\\+:.\\+$"'), '[v:val, split(v:val[2:], ":")]')
+    \   l:extra_opts)
+  call unite#print_message('[grep] Command-line: ' . l:cmdline)
+  let a:context.source__proc = vimproc#pgroup_open(l:cmdline)
+  " let a:context.source__proc = vimproc#popen3(l:cmdline)
+  call a:context.source__proc.stdin.close()
+
+  return []
+endfunction "}}}
+
+function! s:grep_source.async_gather_candidates(args, context) "{{{
+  if a:context.source__proc.stdout.eof
+    " Disable async.
+    call unite#print_message('[grep] Completed.')
+    let a:context.is_async = 0
+  endif
+
+  let l:result = []
+  if has('reltime') && has('float')
+    let l:time = reltime()
+    while str2float(reltimestr(reltime(l:time))) < 0.05
+          \       && !a:context.source__proc.stdout.eof
+      let l:output = a:context.source__proc.stdout.read_line()
+      if l:output != ''
+        call add(l:result, l:output)
+      endif
+    endwhile
+  else
+    let i = 100
+    while 0 < i && !a:context.source__proc.stdout.eof
+      let l:output = a:context.source__proc.stdout.read_line()
+      if l:output != ''
+        call add(l:result, l:output)
+      endif
+
+      let i -= 1
+    endwhile
+  endif
+
+  let l:candidates = map(filter(l:result,
+    \  'v:val =~ "^.\\+:.\\+:.\\+$"'),
+    \ '[v:val, split(v:val[2:], ":")]')
 
   return map(l:candidates,
     \ '{
@@ -149,6 +186,10 @@ function! s:grep_source.gather_candidates(args, context) "{{{
     \   "action__line": v:val[1][1],
     \   "action__pattern": "^".unite#util#escape_pattern(join(v:val[1][2:], ":"))."$",
     \ }')
+endfunction "}}}
+
+function! s:grep_source.on_close(args, context) "{{{
+  call a:context.source__proc.close()
 endfunction "}}}
 
 " vim: foldmethod=marker
