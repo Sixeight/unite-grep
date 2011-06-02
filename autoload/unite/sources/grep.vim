@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 13 May 2011.
+" Last Modified: 02 Jun 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -31,6 +31,9 @@
 " Usage:
 "   :Unite grep:target:-options -input=pattern
 "   (:Unite grep:~/.vim/autoload/unite/sources:-iR -input=file)
+"
+" Required:
+"   vimproc (http://github.com/Shougo/vimproc/tree/master)
 "
 " Special Target:
 "   %         : Current buffer name
@@ -184,7 +187,7 @@ function! s:grep_source.async_gather_candidates(args, context) "{{{
     \   "kind": "jump_list",
     \   "action__path": v:val[0][:1].v:val[1][0],
     \   "action__line": v:val[1][1],
-    \   "action__pattern": "^".unite#util#escape_pattern(join(v:val[1][2:], ":"))."$",
+    \   "action__text": join(v:val[1][2:], ":"),
     \ }')
 endfunction "}}}
 
