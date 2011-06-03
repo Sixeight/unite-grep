@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 02 Jun 2011.
+" Last Modified: 03 Jun 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -44,7 +44,6 @@
 "   let g:unite_source_grep_default_opts = '-iRHn'
 "
 " TODO:
-"   * show current target
 "   * support ignore pattern
 "   * the goal is general unix command source :)
 "
