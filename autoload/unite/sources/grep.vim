@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 03 Jun 2011.
+" Last Modified: 09 Jun 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -147,7 +147,8 @@ function! s:grep_source.gather_candidates(args, context) "{{{
 endfunction "}}}
 
 function! s:grep_source.async_gather_candidates(args, context) "{{{
-  if a:context.source__proc.stdout.eof
+  let l:stdout = a:context.source__proc.stdout
+  if l:stdout.eof
     " Disable async.
     call unite#print_message('[grep] Completed.')
     let a:context.is_async = 0
@@ -157,16 +158,16 @@ function! s:grep_source.async_gather_candidates(args, context) "{{{
   if has('reltime') && has('float')
     let l:time = reltime()
     while str2float(reltimestr(reltime(l:time))) < 0.05
-          \       && !a:context.source__proc.stdout.eof
-      let l:output = a:context.source__proc.stdout.read_line()
+          \       && !l:stdout.eof
+      let l:output = l:stdout.read_line()
       if l:output != ''
         call add(l:result, l:output)
       endif
     endwhile
   else
     let i = 100
-    while 0 < i && !a:context.source__proc.stdout.eof
-      let l:output = a:context.source__proc.stdout.read_line()
+    while 0 < i && !l:stdout.eof
+      let l:output = l:stdout.read_line()
       if l:output != ''
         call add(l:result, l:output)
       endif
