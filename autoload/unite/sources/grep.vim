@@ -1,7 +1,7 @@
 "=============================================================================
 " FILE: grep.vim
 " AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 09 Jun 2011.
+" Last Modified: 10 Jun 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -103,7 +103,7 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
     endif
 
     if l:target == ''
-      let l:target = input('Target: ', '', 'file')
+      let l:target = input('Target: ', '**', 'file')
     endif
 
     if l:target == '%' || l:target == '#'
@@ -111,6 +111,9 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
     elseif l:target ==# '$buffers'
       let l:target = join(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'),
             \ 'unite#util#escape_file_searching(bufname(v:val))'))
+    elseif l:target == '**' && g:unite_source_grep_command ==# 'grep'
+      " Optimized.
+      let l:target = '* -R'
     endif
 
     let a:context.source__target = [l:target]
@@ -126,6 +129,8 @@ endfunction"}}}
 
 function! s:grep_source.gather_candidates(args, context) "{{{
   if empty(a:context.source__target)
+        \ || a:context.source__input == ''
+    let a:context.is_async = 0
     return []
   endif
 
@@ -147,6 +152,7 @@ function! s:grep_source.gather_candidates(args, context) "{{{
 endfunction "}}}
 
 function! s:grep_source.async_gather_candidates(args, context) "{{{
+  let l:stderr = a:context.source__proc.stderr
   let l:stdout = a:context.source__proc.stdout
   if l:stdout.eof
     " Disable async.
@@ -163,6 +169,10 @@ function! s:grep_source.async_gather_candidates(args, context) "{{{
       if l:output != ''
         call add(l:result, l:output)
       endif
+
+      if !l:stderr.eof
+        call l:stderr.read()
+      endif
     endwhile
   else
     let i = 100
@@ -170,6 +180,10 @@ function! s:grep_source.async_gather_candidates(args, context) "{{{
       let l:output = l:stdout.read_line()
       if l:output != ''
         call add(l:result, l:output)
+      endif
+
+      if !l:stderr.eof
+        call l:stderr.read()
       endif
 
       let i -= 1
