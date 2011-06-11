@@ -1,7 +1,8 @@
 "=============================================================================
 " FILE: grep.vim
-" AUTHOR:  Tomohiro Nishimura <tomohiro68@gmail.com>
-" Last Modified: 10 Jun 2011.
+" Modified AUTHOR:  Shougo Matsushita <Shougo.Matsu at gmail.com>
+" Original AUTHOR:  Tomohiro Nishimura <tomohiro68 at gmail.com>
+" Last Modified: 11 Jun 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -23,30 +24,7 @@
 "     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 " }}}
 "=============================================================================
-"
-" Description:
-"   You can grep with unite interactive.
-"   And use grep action on file/buffer kind.
-"
-" Usage:
-"   :Unite grep:target:-options -input=pattern
-"   (:Unite grep:~/.vim/autoload/unite/sources:-iR -input=file)
-"
-" Required:
-"   vimproc (http://github.com/Shougo/vimproc/tree/master)
-"
-" Special Target:
-"   %         : Current buffer name
-"   #         : Alternate buffer name
-"   $buffers  : All buffer names
-"
-" Setting Examples:
-"   let g:unite_source_grep_default_opts = '-iRHn'
-"
-" TODO:
-"   * support ignore pattern
-"   * the goal is general unix command source :)
-"
+
 " Variables  "{{{
 call unite#util#set_default('g:unite_source_grep_command', 'grep')
 call unite#util#set_default('g:unite_source_grep_default_opts', '-Hn')
@@ -65,7 +43,7 @@ function! s:action_grep_file.func(candidates) "{{{
 endfunction "}}}
 
 let s:action_grep_directory = {
-  \   'description': 'grep this directory',
+  \   'description': 'grep this directories',
   \   'is_quit': 1,
   \   'is_invalidate_cache': 1,
   \   'is_selectable': 1,
@@ -73,7 +51,7 @@ let s:action_grep_directory = {
 function! s:action_grep_directory.func(candidates) "{{{
   call unite#start([insert(map(copy(a:candidates), 'v:val.action__directory'), 'grep')])
 endfunction "}}}
-if executable(g:unite_source_grep_command)
+if executable(g:unite_source_grep_command) && unite#util#has_vimproc()
   call unite#custom_action('file,buffer', 'grep', s:action_grep_file)
   call unite#custom_action('file,buffer', 'grep_directory', s:action_grep_directory)
 endif
@@ -86,7 +64,7 @@ function! unite#sources#grep#define() "{{{
     return []
   endif
 
-  return executable('grep') && unite#util#has_vimproc() ? s:grep_source : []
+  return executable(g:unite_source_grep_command) && unite#util#has_vimproc() ? s:grep_source : []
 endfunction "}}}
 
 let s:grep_source = {
@@ -98,10 +76,6 @@ let s:grep_source = {
 function! s:grep_source.hooks.on_init(args, context) "{{{
   let l:target  = get(a:args, 0, '')
   if type(l:target) != type([])
-    if l:target =~ '^-'
-      let l:target  = get(a:args, 1, '')
-    endif
-
     if l:target == ''
       let l:target = input('Target: ', '**', 'file')
     endif
@@ -121,7 +95,12 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
     let a:context.source__target = l:target
   endif
 
-  let a:context.source__input = input('Pattern: ')
+  let a:context.source__extra_opts = get(a:args, 1, '')
+
+  let a:context.source__input = get(a:args, 2, '')
+  if a:context.source__input == ''
+    let a:context.source__input = input('Pattern: ')
+  endif
 
   call unite#print_message('[grep] Target: ' . join(a:context.source__target))
   call unite#print_message('[grep] Pattern: ' . a:context.source__input)
@@ -131,18 +110,16 @@ function! s:grep_source.gather_candidates(args, context) "{{{
   if empty(a:context.source__target)
         \ || a:context.source__input == ''
     let a:context.is_async = 0
+    call unite#print_message('[grep] Completed.')
     return []
   endif
-
-  let l:extra_opts = get(a:args, 0, '') =~ '^-' ?
-        \ a:args[0] : get(a:args, 1, '')
 
   let l:cmdline = printf('%s %s %s %s %s',
     \   g:unite_source_grep_command,
     \   g:unite_source_grep_default_opts,
     \   a:context.source__input,
     \   join(a:context.source__target),
-    \   l:extra_opts)
+    \   a:context.source__extra_opts)
   call unite#print_message('[grep] Command-line: ' . l:cmdline)
   let a:context.source__proc = vimproc#pgroup_open(l:cmdline)
   " let a:context.source__proc = vimproc#popen3(l:cmdline)
@@ -163,7 +140,7 @@ function! s:grep_source.async_gather_candidates(args, context) "{{{
   let l:result = []
   if has('reltime') && has('float')
     let l:time = reltime()
-    while str2float(reltimestr(reltime(l:time))) < 0.05
+    while str2float(reltimestr(reltime(l:time))) < 0.3
           \       && !l:stdout.eof
       let l:output = l:stdout.read_line()
       if l:output != ''
