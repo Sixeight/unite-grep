@@ -2,7 +2,7 @@
 " FILE: grep.vim
 " Modified AUTHOR:  Shougo Matsushita <Shougo.Matsu at gmail.com>
 " Original AUTHOR:  Tomohiro Nishimura <tomohiro68 at gmail.com>
-" Last Modified: 11 Jun 2011.
+" Last Modified: 13 Jun 2011.
 " License: MIT license  {{{
 "     Permission is hereby granted, free of charge, to any person obtaining
 "     a copy of this software and associated documentation files (the
@@ -123,13 +123,15 @@ function! s:grep_source.gather_candidates(args, context) "{{{
   call unite#print_message('[grep] Command-line: ' . l:cmdline)
   let a:context.source__proc = vimproc#pgroup_open(l:cmdline)
   " let a:context.source__proc = vimproc#popen3(l:cmdline)
+
+  " Close handles.
   call a:context.source__proc.stdin.close()
+  call a:context.source__proc.stderr.close()
 
   return []
 endfunction "}}}
 
 function! s:grep_source.async_gather_candidates(args, context) "{{{
-  let l:stderr = a:context.source__proc.stderr
   let l:stdout = a:context.source__proc.stdout
   if l:stdout.eof
     " Disable async.
@@ -140,15 +142,11 @@ function! s:grep_source.async_gather_candidates(args, context) "{{{
   let l:result = []
   if has('reltime') && has('float')
     let l:time = reltime()
-    while str2float(reltimestr(reltime(l:time))) < 0.3
+    while str2float(reltimestr(reltime(l:time))) < 0.2
           \       && !l:stdout.eof
       let l:output = l:stdout.read_line()
       if l:output != ''
         call add(l:result, l:output)
-      endif
-
-      if !l:stderr.eof
-        call l:stderr.read()
       endif
     endwhile
   else
@@ -157,10 +155,6 @@ function! s:grep_source.async_gather_candidates(args, context) "{{{
       let l:output = l:stdout.read_line()
       if l:output != ''
         call add(l:result, l:output)
-      endif
-
-      if !l:stderr.eof
-        call l:stderr.read()
       endif
 
       let i -= 1

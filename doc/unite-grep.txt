@@ -96,6 +96,9 @@ TODO						*unite-grep-todo*
 ==============================================================================
 CHANGELOG					*unite-grep-changelog*
 
+2011-06-13
+- Improved perfomance.
+
 2011-06-10
 - Added documentation.
 - Ver.1.0
