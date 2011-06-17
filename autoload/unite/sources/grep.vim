@@ -28,6 +28,7 @@
 " Variables  "{{{
 call unite#util#set_default('g:unite_source_grep_command', 'grep')
 call unite#util#set_default('g:unite_source_grep_default_opts', '-Hn')
+call unite#util#set_default('g:unite_source_grep_recursive_opt', '-R')
 call unite#util#set_default('g:unite_source_grep_max_candidates', 100)
 "}}}
 
@@ -49,7 +50,7 @@ let s:action_grep_directory = {
   \   'is_selectable': 1,
   \ }
 function! s:action_grep_directory.func(candidates) "{{{
-  call unite#start([['grep', map(copy(a:candidates), 'v:val.action__directory'), '-R']])
+  call unite#start([['grep', map(copy(a:candidates), 'v:val.action__directory'), g:unite_source_grep_recursive_opt]])
 endfunction "}}}
 if executable(g:unite_source_grep_command) && unite#util#has_vimproc()
   call unite#custom_action('file,buffer', 'grep', s:action_grep_file)
@@ -85,9 +86,9 @@ function! s:grep_source.hooks.on_init(args, context) "{{{
     elseif l:target ==# '$buffers'
       let l:target = join(map(filter(range(1, bufnr('$')), 'buflisted(v:val)'),
             \ 'unite#util#escape_file_searching(bufname(v:val))'))
-    elseif l:target == '**' && g:unite_source_grep_command ==# 'grep'
+    elseif l:target == '**'
       " Optimized.
-      let l:target = '* -R'
+      let l:target = '* ' . g:unite_source_grep_recursive_opt
     endif
 
     let a:context.source__target = [l:target]
