@@ -96,6 +96,9 @@ TODO						*unite-grep-todo*
 ==============================================================================
 CHANGELOG					*unite-grep-changelog*
 
+2011-06-17
+- Fixed unite actions.
+
 2011-06-13
 - Improved perfomance.
 
